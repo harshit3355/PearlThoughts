@@ -3,11 +3,18 @@
 name: CI
 
 # Controls when the workflow will run
+
 on:
-  # Triggers the workflow on push or pull request events but only for the "main" branch
-  push:
-    branches: main
-  
+  workflow_dispatch:
+    inputs:
+      action:
+        description: 'Choose action to perform: deploy or destroy'
+        required: true
+        default: deploy
+        type: choice
+        options:
+          - deploy
+          - destroy
 
   # Allows you to run this workflow manually from the Actions tab
 
@@ -17,6 +24,9 @@ jobs:
   build:
     # The type of runner that the job will run on
     runs-on: ubuntu-latest
+
+    env:
+      AWS_REGION: ap-south-1
 
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
@@ -51,6 +61,19 @@ jobs:
       - name: Initialize Terraform
         run: terraform init
         working-directory: ./terraform
+
+      - name: Terraform Apply or Destroy
+        run: |
+          if [ "${{ github.event.inputs.action }}" == "deploy" ]; then
+            terraform apply -auto-approve
+          elif [ "${{ github.event.inputs.action }}" == "destroy" ]; then
+            terraform destroy -auto-approve
+          fi
+        working-directory: ./terraform
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_REGION: ${{ env.AWS_REGION }}
 
         
       - name: Deploy to ECS
