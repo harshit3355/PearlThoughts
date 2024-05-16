@@ -37,7 +37,7 @@ jobs:
 
       - name: Build Docker image
         run: docker build -t harshit3355/peer:latest .
-        working-directory: ./app
+        working-directory: ./Node
 
       - name: Login to docker hub
         run: echo ${{ secrets.DOCKERHUB_PASSWORD }} | docker login -u ${{ secrets.DOCKERHUB_USERNAME }} --password-stdin
