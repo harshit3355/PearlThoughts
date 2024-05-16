@@ -1,0 +1,34 @@
+name: Destroy AWS Infrastructure
+
+on:
+  workflow_dispatch:
+
+jobs:
+  destroy:
+    runs-on: ubuntu-latest
+
+    env:
+      AWS_REGION: ap-south-1
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+
+    - name: Configure AWS credentials
+      uses: aws-actions/configure-aws-credentials@v2
+      with:
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws-region: ${{ env.AWS_REGION }}
+
+    - name: Install Terraform
+      uses: hashicorp/setup-terraform@v1
+
+    - name: Terraform init
+      run: terraform init
+
+    - name: Terraform destroy
+      run: terraform destroy -auto-approve
+
+    - name: Post-destroy steps
+      run: echo "AWS infrastructure has been destroyed."
